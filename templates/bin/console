@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eux
+
+SUFFIX="$(openssl rand -hex 2)"
+
+docker compose exec web \
+  iex \
+    --sname "${APP_NODE_NAME}-${SUFFIX}@web" \
+    --cookie "${APP_COOKIE}" \
+    -S mix

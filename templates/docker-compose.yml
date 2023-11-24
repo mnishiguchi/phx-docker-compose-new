@@ -1,0 +1,41 @@
+version: "3"
+services:
+  web:
+    build:
+      context: .
+      args:
+        - HOST_GROUP_NAME=${HOST_GROUP_NAME}
+        - HOST_USER_NAME=${HOST_USER_NAME}
+        - HOST_UID=${HOST_UID}
+        - HOST_GID=${HOST_GID}
+        - HOST_UNAME=${HOST_UNAME}
+    working_dir: /app
+    volumes:
+      - .:/app
+    ports:
+      - 4000:4000
+    depends_on:
+      - db
+    command: "elixir --sname ${APP_NODE_NAME}@web --cookie ${APP_COOKIE} -S mix phx.server"
+  db:
+    image: postgres:14-alpine
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+  livebook:
+    image: ghcr.io/livebook-dev/livebook
+    volumes:
+      - ./notebooks:/data/notebooks
+    ports:
+      - 4001:8080
+    environment:
+      - LIVEBOOK_COOKIE=${APP_COOKIE}
+      - LIVEBOOK_DEFAULT_RUNTIME=attached:${APP_NODE_NAME}@web:${APP_COOKIE}
+      - LIVEBOOK_HOME=/data/notebooks
+      - LIVEBOOK_TOKEN_ENABLED=false
+volumes:
+  dbdata: {}

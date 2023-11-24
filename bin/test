@@ -1,4 +1,0 @@
-#!/bin/sh
-set -eux
-
-docker compose exec app mix test

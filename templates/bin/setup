@@ -1,0 +1,22 @@
+#!/bin/sh
+set -eux
+
+# stop the app
+docker compose down
+
+# stop containers bound to 4000, 4001, and 5432 because we want to use them now
+docker container ls --format "{{.ID}}\t{{.Ports}}" |
+  awk '/4000|4001|5432/ {print $1}' |
+  xargs -t -I{} docker container stop {}
+
+# ensure that mix and node dependencies are installed
+docker compose run --rm --no-deps web \
+  mix deps.get &&
+  if [ -f ./assets/package.json ]; then npm install --prefix assets; fi
+
+# set up the app
+docker compose run web \
+  mix setup
+
+# start the app
+docker compose up --detach --remove-orphans
