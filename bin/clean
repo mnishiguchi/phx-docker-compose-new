@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eux
+
+mix phx.digest.clean --all
+mix clean
+

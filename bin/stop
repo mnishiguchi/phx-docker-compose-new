@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eux
+
+# stop and remove containers
+docker compose down
+

@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eux
+
+# create and start containers in the background
+docker compose up --detach

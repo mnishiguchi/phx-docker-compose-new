@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eux
+
+# execute a command in a running app container
+docker compose exec app "$@"

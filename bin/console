@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eux
+
+docker compose exec app \
+  iex --sname "${NODE_NAME}-$(openssl rand -hex 2)@app" --cookie "${APP_COOKIE}" -S mix
