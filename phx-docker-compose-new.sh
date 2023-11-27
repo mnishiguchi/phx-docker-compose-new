@@ -68,6 +68,22 @@ case "$1" in
   ;;
 esac
 
+if [ -d "$APP_DIR" ]; then
+  echo "$APP_DIR already exists."
+  printf "Overwrite (y/N)? "
+  read -r option
+
+  case "$option" in
+  y | Y)
+    rm -rf "$APP_DIR"
+    ;;
+  *)
+    echo "Please select another directory for installation."
+    exit 1
+    ;;
+  esac
+fi
+
 echo "SCRIPT_DIR:    $SCRIPT_DIR"
 echo "APP_DIR:       $APP_DIR"
 echo "APP_NAME:      $APP_NAME"
@@ -94,59 +110,33 @@ docker run \
   "$IMAGE_NAME" \
   mix phx.new "$@"
 
-## copy files from templates
-
-cp "$SCRIPT_DIR/templates/Dockerfile" "$APP_DIR/"
-cp "$SCRIPT_DIR/templates/docker-compose.yml" "$APP_DIR/"
-cp -f "$SCRIPT_DIR/templates/README.md" "$APP_DIR/"
-cp -r "$SCRIPT_DIR/templates/bin" "$APP_DIR/bin"
-
-# dynamically generate bin/bootstrap because app name is fixed while other
-# values are dependant on host machines
-cat <<-EOF >"$APP_DIR/bin/bootstrap"
-#!/bin/sh
-set eu
-
-APP_NAME="${APP_NAME}"
-APP_NODE_NAME="${APP_NODE_NAME}"
-
-gen_env() {
-  {
-    echo "export APP_COOKIE=\$(openssl rand -hex 12)"
-    echo "export APP_NAME=\${APP_NAME}"
-    echo "export APP_NODE_NAME=\${APP_NODE_NAME}"
-    echo "export HOST_GID=\$(id -g)"
-    echo "export HOST_GROUP_NAME=\${USER}"
-    echo "export HOST_UID=\$(id -u)"
-    echo "export HOST_UNAME=\$(uname)"
-    echo "export HOST_USER_NAME=\${USER}"
-  } >.env
-}
-
-if [ -f .env ]; then
-  echo ".env already exists"
-  printf "Overwrite (y/N)? "
-  read -r option
-
-  case "\$option" in
-  y | Y)
-    echo "yes"
-    gen_env
-    ;;
-  *)
-    echo "no"
-    ;;
-  esac
-else
-  gen_env
-fi
-EOF
-
 ## set up phoenix app
+
+sed_i() {
+  if [ "$HOST_UNAME" = "Darwin" ]; then
+    sed -i '' "$1" "$2"
+  else
+    sed -i "$1" "$2"
+  fi
+}
 
 (
   cd "$APP_DIR"
 
+  # copy files from templates
+  cp "$SCRIPT_DIR/templates/Dockerfile" .
+  cp "$SCRIPT_DIR/templates/docker-compose.yml" .
+  cp -f "$SCRIPT_DIR/templates/README.md" .
+  cp -r "$SCRIPT_DIR/templates/bin" ./bin
+
+  # app name and node name are determined based on the user input
+  sed_i "s/__DECLARE_APP_NAME__/$APP_NAME/" ./bin/bootstrap
+  sed_i "s/__DECLARE_APP_NODE_NAME__/$APP_NODE_NAME/" ./bin/bootstrap
+
+  # prepare .gitignore
+  echo ".env*" >>.gitignore
+
+  # make a git commit with default phoenix app
   if command -v git >/dev/null; then
     git init
     git add .
@@ -154,16 +144,11 @@ EOF
   fi
 
   # adjust phoenix config files so we can connect to app and db containers
-  if [ "$HOST_UNAME" = "Darwin" ]; then
-    sed -i '' 's/hostname: "localhost"/hostname: "db"/' ./config/dev.exs
-    sed -i '' 's/hostname: "localhost"/hostname: "db"/' ./config/test.exs
-    sed -i '' 's/ip: {127, 0, 0, 1}/ip: {0, 0, 0, 0}/' ./config/dev.exs
-  else
-    sed -i 's/hostname: "localhost"/hostname: "db"/' ./config/dev.exs
-    sed -i 's/hostname: "localhost"/hostname: "db"/' ./config/test.exs
-    sed -i 's/ip: {127, 0, 0, 1}/ip: {0, 0, 0, 0}/' ./config/dev.exs
-  fi
+  sed_i 's/hostname: "localhost"/hostname: "db"/' ./config/dev.exs
+  sed_i 's/hostname: "localhost"/hostname: "db"/' ./config/test.exs
+  sed_i 's/ip: {127, 0, 0, 1}/ip: {0, 0, 0, 0}/' ./config/dev.exs
 
+  # run commands
   bin/bootstrap
   bin/setup
   bin/logs
@@ -172,16 +157,29 @@ EOF
 )
 
 echo "
-$APP_NAME has been successsfully generated at $APP_DIR 🎉
+$APP_NAME has been successsfully generated at $APP_DIR 🎉🎉🎉
 
     $ cd $APP_NAME
+
+
+Load environment variables with:
+
+    $ . ./.env
 
 Start your Phoenix app with:
 
     $ bin/start
 
-Now you can open the app from your browser.
+Open your Phoenix app from a browser at:
 
-    $ open http://localhost:4000
+    http://localhost:4000/
+
+Open Phoenix LiveDashboard at:
+
+    http://localhost:4000/dev/dashboard/
+
+Open Livebook at:
+
+    http://localhost:4001/
 
 "

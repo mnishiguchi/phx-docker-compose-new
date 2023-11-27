@@ -1,2 +1,45 @@
 #!/bin/sh
-# Nothing interesting here yet. Try again later.
+set eu
+
+APP_NAME="__DECLARE_APP_NAME__"
+APP_NODE_NAME="__DECLARE_APP_NODE_NAME__"
+
+gen_env() {
+  cat <<-EOF >.env
+export APP_COOKIE=$(openssl rand -hex 12)
+export APP_NAME=${APP_NAME}
+export APP_NODE_NAME=${APP_NODE_NAME}
+
+HOST_GID=$(id -g)
+HOST_GROUP_NAME=${USER}
+HOST_UID=$(id -u)
+HOST_UNAME=$(uname)
+HOST_USER_NAME=${USER}
+EOF
+}
+
+if [ -f .env ]; then
+  echo ".env already exists"
+  printf "Overwrite (y/N)? "
+  read -r option
+
+  case "$option" in
+  y | Y)
+    echo "yes"
+    gen_env
+    ;;
+  *)
+    echo "no"
+    exit 0
+    ;;
+  esac
+else
+  gen_env
+fi
+
+echo "
+To load variables in your environment, run this in your terminal:
+
+    . ./.env
+
+"
