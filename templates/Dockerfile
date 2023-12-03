@@ -6,16 +6,14 @@ ARG UID
 ARG UNAME
 ARG USER
 
-# install build dependencies
-RUN apt-get update -y && apt-get install -y \
+RUN set -x && apt-get update --yes && apt-get install --yes --no-install-recommends \
       build-essential \
       git \
       inotify-tools \
       nodejs \
       npm \
-    && apt-get clean && rm -f /var/lib/apt/lists/*_*
+    && apt-get clean && rm -rf /tmp/* /var/lib/apt/lists/*
 
-# sync user
 RUN if [ "$UNAME" = "Darwin" ]; then \
       adduser --uid "$UID" --gid "$GID" "$USER"; \
     else \
@@ -25,7 +23,6 @@ RUN if [ "$UNAME" = "Darwin" ]; then \
 
 USER $USER
 
-# install hex + rebar + phx_new
 RUN mix local.hex --force && \
     mix local.rebar --force && \
     mix archive.install --force hex phx_new
