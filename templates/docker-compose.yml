@@ -30,7 +30,8 @@ services:
     volumes:
       - ./notebooks:/data/notebooks
     ports:
-      - 4001:8080
+      - 8080:8080
+      - 8081:8081
     environment:
       - LIVEBOOK_COOKIE=${APP_COOKIE}
       - LIVEBOOK_DEFAULT_RUNTIME=attached:${APP_NODE_NAME}@web:${APP_COOKIE}

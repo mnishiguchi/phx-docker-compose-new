@@ -48,7 +48,7 @@ Open the app from your browser:
 
 * [localhost:4000/](http://localhost:4000) for your Phoenix application
 * [localhost:4000/dev/dashboard/](http://localhost:4000/dev/dashboard) for [Phoenix LiveDashboard](https://hexdocs.pm/phoenix_live_dashboard)
-* [localhost:4001/](http://localhost:4001) for [Livebook](https://livebook.dev/)
+* [localhost:8080/](http://localhost:8080) for [Livebook](https://livebook.dev/)
 
 Here are some other commands:
 

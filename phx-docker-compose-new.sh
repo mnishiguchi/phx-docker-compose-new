@@ -173,6 +173,6 @@ Open Phoenix LiveDashboard at:
 
 Open Livebook at:
 
-    http://localhost:4001/
+    http://localhost:8080/
 
 "

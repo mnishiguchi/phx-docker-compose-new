@@ -4,9 +4,9 @@ set -eux
 # stop the app
 docker compose down
 
-# stop containers bound to 4000, 4001, and 5432 because we want to use them now
+# stop containers bound to 4000, 8080, and 5432 because we want to use them now
 docker container ls --format "{{.ID}}\t{{.Ports}}" |
-  awk '/4000|4001|5432/ {print $1}' |
+  awk '/4000|8080|5432/ {print $1}' |
   xargs -t -I{} docker container stop {}
 
 # ensure that mix and node dependencies are installed
