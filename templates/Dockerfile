@@ -1,11 +1,10 @@
 # https://hub.docker.com/r/hexpm/elixir/tags?name=debian-bookworm
 FROM hexpm/elixir:1.15.7-erlang-26.1.1-debian-bookworm-20230612-slim
 
-ARG HOST_USER_NAME
-ARG HOST_GROUP_NAME
-ARG HOST_UID
-ARG HOST_GID
-ARG HOST_UNAME
+ARG GID
+ARG UID
+ARG UNAME
+ARG USER
 
 # install build dependencies
 RUN apt-get update -y && apt-get install -y \
@@ -17,14 +16,14 @@ RUN apt-get update -y && apt-get install -y \
     && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
 # sync user
-RUN if [ "$HOST_UNAME" = "Darwin" ]; then \
-      adduser --uid "$HOST_UID" --gid "$HOST_GID" "$HOST_USER_NAME"; \
+RUN if [ "$UNAME" = "Darwin" ]; then \
+      adduser --uid "$UID" --gid "$GID" "$USER"; \
     else \
-      addgroup --gid "$HOST_GID" "$HOST_GROUP_NAME"; \
-      adduser --uid "$HOST_UID" --gid "$HOST_GID" "$HOST_USER_NAME"; \
+      addgroup --gid "$GID" "$USER"; \
+      adduser --uid "$UID" --gid "$GID" "$USER"; \
     fi
 
-USER $HOST_USER_NAME
+USER $USER
 
 # install hex + rebar + phx_new
 RUN mix local.hex --force && \

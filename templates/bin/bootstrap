@@ -10,11 +10,10 @@ export APP_COOKIE=$(openssl rand -hex 12)
 export APP_NAME=${APP_NAME}
 export APP_NODE_NAME=${APP_NODE_NAME}
 
-HOST_GID=$(id -g)
-HOST_GROUP_NAME=${USER}
-HOST_UID=$(id -u)
-HOST_UNAME=$(uname)
-HOST_USER_NAME=${USER}
+GID=$(id -g)
+UID=$(id -u)
+UNAME=$(uname)
+USER=${USER}
 EOF
 }
 

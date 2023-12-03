@@ -4,11 +4,10 @@ services:
     build:
       context: .
       args:
-        - HOST_GROUP_NAME=${HOST_GROUP_NAME}
-        - HOST_USER_NAME=${HOST_USER_NAME}
-        - HOST_UID=${HOST_UID}
-        - HOST_GID=${HOST_GID}
-        - HOST_UNAME=${HOST_UNAME}
+        - USER=${USER}
+        - UID=${UID}
+        - GID=${GID}
+        - UNAME=${UNAME}
     working_dir: /app
     volumes:
       - .:/app

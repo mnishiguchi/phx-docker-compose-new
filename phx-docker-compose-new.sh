@@ -42,12 +42,6 @@ APP_NAME="$(basename "$1")"
 # underscores aren't valid characters in DNS hostnames
 APP_NODE_NAME="$(echo "$APP_NAME" | tr _ -)"
 
-HOST_GID="$(id -g)"
-HOST_GROUP_NAME="${USER}"
-HOST_UID="$(id -u)"
-HOST_UNAME="$(uname)"
-HOST_USER_NAME="${USER}"
-
 ## check paths
 
 CALLER_DIR="$(pwd)"
@@ -94,11 +88,10 @@ echo "APP_NODE_NAME: $APP_NODE_NAME"
 IMAGE_NAME="phx-docker-compose-new"
 
 docker build -t "$IMAGE_NAME" \
-  --build-arg HOST_GID="$HOST_GID" \
-  --build-arg HOST_GROUP_NAME="$HOST_GROUP_NAME" \
-  --build-arg HOST_UID="$HOST_UID" \
-  --build-arg HOST_UNAME="$HOST_UNAME" \
-  --build-arg HOST_USER_NAME="$HOST_USER_NAME" \
+  --build-arg GID="$(id -g)" \
+  --build-arg UID="$(id -u)" \
+  --build-arg UNAME="$(uname)" \
+  --build-arg USER="$USER" \
   "$SCRIPT_DIR/templates"
 
 ## generate phoenix app
@@ -113,7 +106,7 @@ docker run \
 ## set up phoenix app
 
 sed_i() {
-  if [ "$HOST_UNAME" = "Darwin" ]; then
+  if [ "$(uname)" = "Darwin" ]; then
     sed -i '' "$1" "$2"
   else
     sed -i "$1" "$2"
