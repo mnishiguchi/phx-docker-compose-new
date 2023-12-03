@@ -101,7 +101,7 @@ docker run \
   --mount type=bind,source="$CALLER_DIR",target=/app \
   --workdir /app \
   "$IMAGE_NAME" \
-  mix phx.new "$@"
+  bash -c "mix archive.install --force hex phx_new && mix phx.new $*"
 
 ## set up phoenix app
 

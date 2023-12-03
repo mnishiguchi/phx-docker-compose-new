@@ -23,6 +23,6 @@ RUN if [ "$UNAME" = "Darwin" ]; then \
 
 USER $USER
 
-RUN mix local.hex --force && \
-    mix local.rebar --force && \
-    mix archive.install --force hex phx_new
+RUN mix local.hex --force && mix local.rebar --force
+
+
