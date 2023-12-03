@@ -98,7 +98,7 @@ docker build -t "$IMAGE_NAME" \
 
 docker run \
   --rm \
-  --mount type=bind,src="$CALLER_DIR",dst=/app \
+  --mount type=bind,source="$CALLER_DIR",target=/app \
   --workdir /app \
   "$IMAGE_NAME" \
   mix phx.new "$@"
