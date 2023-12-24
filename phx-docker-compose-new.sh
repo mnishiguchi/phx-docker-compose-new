@@ -78,10 +78,15 @@ if [ -d "$APP_DIR" ]; then
   esac
 fi
 
-echo "SCRIPT_DIR:    $SCRIPT_DIR"
-echo "APP_DIR:       $APP_DIR"
-echo "APP_NAME:      $APP_NAME"
-echo "APP_NODE_NAME: $APP_NODE_NAME"
+echo "script location:  $SCRIPT_DIR"
+echo "app directory:    $APP_DIR"
+echo "app project name: $APP_NAME"
+echo "app node name:    $APP_NODE_NAME"
+echo "docker context:   $(docker context show)"
+
+if docker context show | grep -iq rootless; then
+  echo "warning: rootless mode might cause file access issues"
+fi
 
 ## build image
 
