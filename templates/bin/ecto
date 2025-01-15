@@ -1,0 +1,35 @@
+#!/bin/sh
+set -eux
+
+# Ensure a subcommand is provided
+if [ "$#" -eq 0 ]; then
+  echo "Usage: $0 {migrate|rollback|seed|reset|create|drop}"
+  exit 1
+fi
+
+# Handle subcommands
+case "$1" in
+  migrate)
+    docker compose exec web mix ecto.migrate
+    ;;
+  rollback)
+    docker compose exec web mix ecto.rollback
+    ;;
+  seed)
+    docker compose exec web mix run priv/repo/seeds.exs
+    ;;
+  reset)
+    docker compose exec web mix ecto.reset
+    ;;
+  create)
+    docker compose exec web mix ecto.create
+    ;;
+  drop)
+    docker compose exec web mix ecto.drop
+    ;;
+  *)
+    echo "Unknown command: $1"
+    echo "Available commands: migrate, rollback, seed, reset, create, drop"
+    exit 1
+    ;;
+esac

@@ -1,64 +1,56 @@
-# Elixir Phoenix Docker Compose generator
+# phx-dock: Run Phoenix in Docker
 
-A [mix phx.new] wrapper that generates a new Phoenix app and basic development
-environment with [Docker Compose] and [Livebook].
+## Introduction
 
-## Getting started
+`phx-dock` provides a simple way to set up a Phoenix development environment
+inside a Docker container without installing Elixir or Phoenix on your local
+machine.
 
-`phx-docker-compose-new` requires a few programs on your system.
+## Installation
 
-- [Git] version control system
-- [Docker] (Docker Engine and Docker CLI client)
-- [Docker Compose]
+To install `phxd-new`, run:
 
-```shell
-git version
-docker --version
-docker compose version
+```sh
+curl -fsSL https://raw.githubusercontent.com/mnishiguchi/phx-dock/main/install.sh | bash
 ```
 
-You can download `phx-docker-compose-new` from Github.
+This will:
 
-```shell
-git clone https://github.com/mnishiguchi/phx-docker-compose-new.git ~/.phx-docker-compose-new
+- Clone the repository into `~/.config/phx-dock`.
+- Create a symlink `~/.local/bin/phxd-new` for easy access.
+
+After installation, you can run `phxd-new` from anywhere.
+
+## Creating a Phoenix App Using `phxd-new`
+
+### Generate a New Phoenix Project
+
+Use `phxd-new` to create a new Phoenix project:
+
+```sh
+phxd-new my_app
 ```
 
-Here is one way to make `phx-docker-compose-new` available in your terminal.
+This command:
 
-```shell
-alias phx-docker-compose-new=~/.phx-docker-compose-new/phx-docker-compose-new.sh
+- Generates a Phoenix application in `my_app/`.
+- Sets up a Docker-based development environment.
+- Copies useful `bin/` scripts for common tasks.
+
+## Livebook Integration
+
+A Livebook instance is included and attached to the Phoenix app node. You can access it at:
+
+- **Livebook**: [http://localhost:8080](http://localhost:8080)
+- **Phoenix App**: [http://localhost:4000](http://localhost:4000)
+- **LiveDashboard**: [http://localhost:4000/dev/dashboard](http://localhost:4000/dev/dashboard)
+
+To ensure Livebook works correctly, the runtime is attached as:
+
+```yaml
+LIVEBOOK_DEFAULT_RUNTIME=attached:${APP_NODE_NAME}@web:${APP_COOKIE}
 ```
 
-Create a Phoenix app running `phx-docker-compose-new`. For possible options,
-refer to [Phoenix documentation](https://hexdocs.pm/phoenix/Mix.Tasks.Phx.New.html).
+## Start Developing
 
-```shell
-phx-docker-compose-new sample_phx_app --no-assets --no-gettext --no-mailer
-```
-
-Change directory to your app and start Phoenix endpoint.
-
-```shell
-cd sample_phx_app
-
-bin/start
-```
-
-Open the app from your browser:
-
-* [localhost:4000/](http://localhost:4000) for your Phoenix application
-* [localhost:4000/dev/dashboard/](http://localhost:4000/dev/dashboard) for [Phoenix LiveDashboard](https://hexdocs.pm/phoenix_live_dashboard)
-* [localhost:8080/](http://localhost:8080) for [Livebook](https://livebook.dev/)
-
-Here are some other commands:
-
-- Stop Phoenix endpoint with `bin/stop`
-- [IEx](https://elixirschool.com/en/lessons/basics/iex_helpers) into your running app with `bin/console`
-- Check logs with `bin/logs`
-
-[mix phx.new]: https://hexdocs.pm/phoenix/Mix.Tasks.Phx.New.html
-[Livebook]: https://livebook.dev/
-[Docker Compose]: https://docs.docker.com/compose/
-[Git]: https://git-scm.com/
-[Docker]: https://docs.docker.com/engine/
-[Docker Compose]: https://docs.docker.com/compose/
+Your Phoenix application is now ready to run inside a Docker container. Enjoy coding!

@@ -1,41 +1,40 @@
-version: "3"
 services:
   web:
-    build:
-      context: .
-      args:
-        - USER=${USER}
-        - UID=${UID}
-        - GID=${GID}
-        - UNAME=${UNAME}
+    build: .
+    command: "elixir --sname ${APP_NODE_NAME}@web --cookie ${APP_COOKIE} -S mix phx.server"
+    user: "${CONTAINER_UID}:${CONTAINER_GID}"
     working_dir: /app
+    ports:
+      - "4000:4000"
     volumes:
       - .:/app
-    ports:
-      - 4000:4000
+      - mix_cache:/home/phoenix/.mix
     depends_on:
       - db
-    command: "elixir --sname ${APP_NODE_NAME}@web --cookie ${APP_COOKIE} -S mix phx.server"
+    stdin_open: true
+    tty: true
   db:
-    image: postgres:14-alpine
-    ports:
-      - 5432:5432
+    image: postgres:17-alpine
+    restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
     volumes:
-      - dbdata:/var/lib/postgresql/data
+      - pg_data:/var/lib/postgresql/data
   livebook:
     image: ghcr.io/livebook-dev/livebook
-    volumes:
-      - ./notebooks:/data/notebooks
-    ports:
-      - 8080:8080
-      - 8081:8081
     environment:
       - LIVEBOOK_COOKIE=${APP_COOKIE}
       - LIVEBOOK_DEFAULT_RUNTIME=attached:${APP_NODE_NAME}@web:${APP_COOKIE}
       - LIVEBOOK_HOME=/data/notebooks
       - LIVEBOOK_TOKEN_ENABLED=false
+    ports:
+      - 8080:8080
+      - 8081:8081
+    volumes:
+      - ./notebooks:/data/notebooks
 volumes:
-  dbdata: {}
+  pg_data:
+  mix_cache:

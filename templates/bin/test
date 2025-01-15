@@ -1,5 +1,4 @@
 #!/bin/sh
 set -eux
 
-docker compose exec web \
-  mix test
+docker compose exec -e MIX_ENV=test web mix test

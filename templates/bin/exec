@@ -1,5 +1,15 @@
 #!/bin/sh
 set -eux
 
-# execute a command in a running app container
+# Ensure a command is provided
+if [ "$#" -eq 0 ]; then
+  echo "Usage: $0 <command> [args...]"
+  echo "Examples:"
+  echo "  $0 mix phx.server"
+  echo "  $0 mix test"
+  echo "  $0 iex -S mix"
+  exit 1
+fi
+
+# Execute the given command inside the running web container
 docker compose exec web "$@"

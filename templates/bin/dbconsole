@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eux
+
+# Connect to the PostgreSQL database shell
+docker compose exec db psql -U postgres
