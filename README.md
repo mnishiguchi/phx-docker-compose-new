@@ -23,8 +23,6 @@ After installation, you can run `phxd-new` from anywhere.
 
 ## Creating a Phoenix App Using `phxd-new`
 
-### Generate a New Phoenix Project
-
 Use `phxd-new` to create a new Phoenix project:
 
 ```sh
@@ -37,20 +35,28 @@ This command:
 - Sets up a Docker-based development environment.
 - Copies useful `bin/` scripts for common tasks.
 
-## Livebook Integration
+## Running your Phoenix App in Docker
 
-A Livebook instance is included and attached to the Phoenix app node. You can access it at:
+After generating your Phoenix project with `phxd-new`, you can start your
+development environment using Docker.
 
-- **Livebook**: [http://localhost:8080](http://localhost:8080)
-- **Phoenix App**: [http://localhost:4000](http://localhost:4000)
-- **LiveDashboard**: [http://localhost:4000/dev/dashboard](http://localhost:4000/dev/dashboard)
+Navigate into your project directory:
 
-To ensure Livebook works correctly, the runtime is attached as:
-
-```yaml
-LIVEBOOK_DEFAULT_RUNTIME=attached:${APP_NODE_NAME}@web:${APP_COOKIE}
+```sh
+cd my_app
 ```
 
-## Start Developing
+Then, start the application:
 
-Your Phoenix application is now ready to run inside a Docker container. Enjoy coding!
+```sh
+docker compose up
+```
+
+Your Phoenix app will be available at: http://localhost:4000
+
+## Using Livebook
+
+If you want to use Livebook, it's already included in the setup. You can access
+it at: http://localhost:8080
+
+This allows you to run interactive notebooks connected to your Phoenix app.
