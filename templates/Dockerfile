@@ -5,35 +5,28 @@ ARG DEBIAN_VERSION=bookworm-20250113
 # https://hub.docker.com/r/hexpm/elixir/tags?name=debian-bookworm
 FROM hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-${DEBIAN_VERSION}-slim
 
-# Install dependencies
+ARG HOST_UID=1000
+ARG HOST_GID=1000
+
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
   git curl build-essential inotify-tools libssl-dev nodejs npm \
   && rm -rf /var/lib/apt/lists/*
 
-# Install Hex and Rebar (Elixir package managers)
+# Install Hex and Rebar
 RUN mix local.hex --force && mix local.rebar --force
 
-# Configure Mix directories for a writable setup
-ENV MIX_HOME="/home/phoenix/.mix"
-RUN mkdir -p $MIX_HOME /home/phoenix/.hex/packages/hexpm /home/phoenix/tmp \
-    && chmod -R 777 $MIX_HOME /home/phoenix/.hex /home/phoenix/tmp /tmp
-
-# Install Phoenix globally
-RUN mix archive.install hex phx_new --force
-
 # Create a non-root user
-RUN addgroup --system phoenix && adduser --system --ingroup phoenix --home /home/phoenix phoenix
-
-# Ensure UID/GID mapping works when using -u $(id -u):$(id -g)
-RUN echo "phoenix:x:1000:1000::/home/phoenix:/bin/bash" >> /etc/passwd && \
-    echo "phoenix:x:1000:" >> /etc/group
-
-# Ensure /tmp is writable
-ENV TMPDIR="/home/phoenix/tmp"
+RUN addgroup --system --gid ${HOST_GID} phoenix && \
+    adduser --system --uid ${HOST_UID} --gid ${HOST_GID} --home /home/phoenix phoenix
 
 # Set working directory
 WORKDIR /app
 RUN mkdir -p /app && chown -R phoenix:phoenix /app
+
+# Ensure writable directories (for mix dependencies)
+RUN mkdir -p /home/phoenix/.mix /home/phoenix/.hex && \
+    chown -R phoenix:phoenix /home/phoenix/.mix /home/phoenix/.hex
 
 # Switch to non-root user
 USER phoenix

@@ -2,7 +2,7 @@ services:
   web:
     build: .
     command: "elixir --sname ${APP_NODE_NAME}@web --cookie ${APP_COOKIE} -S mix phx.server"
-    user: "${CONTAINER_UID}:${CONTAINER_GID}"
+    user: "${HOST_UID}:${HOST_GID}"
     working_dir: /app
     ports:
       - "4000:4000"
@@ -15,7 +15,7 @@ services:
     tty: true
   db:
     image: postgres:17-alpine
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres

@@ -53,9 +53,7 @@ SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
 # Set project-related variables
 APP_NAME="$(basename "$1")"
 APP_NODE_NAME="$(echo "$APP_NAME" | tr _ -)"
-CALLER_DIR="$(pwd)"
-APP_DIR="$CALLER_DIR/$APP_NAME"
-DOCKER_IMAGE="phx-dock"
+APP_DIR="$(pwd)/$APP_NAME"
 
 # Function to handle macOS and Linux sed differences
 sed_i() {
@@ -72,19 +70,6 @@ echo "Project directory: $APP_DIR"
 echo "Application name: $APP_NAME"
 echo "Application node name: $APP_NODE_NAME"
 
-# Build the $DOCKER_IMAGE image if it doesn't exist
-if ! docker image inspect "$DOCKER_IMAGE" >/dev/null 2>&1; then
-  echo_heading "Building $DOCKER_IMAGE Docker image..."
-  if docker build -t "$DOCKER_IMAGE" "$SCRIPT_DIR/templates"; then
-    echo_success "$DOCKER_IMAGE Docker image built successfully."
-  else
-    echo_failure "Failed to build $DOCKER_IMAGE Docker image."
-    exit 1
-  fi
-else
-  echo_success "$DOCKER_IMAGE Docker image is already available."
-fi
-
 # Ensure the target project directory does not already exist
 if [ -d "$APP_DIR" ]; then
   echo_failure "$APP_DIR already exists."
@@ -99,15 +84,32 @@ if [ -d "$APP_DIR" ]; then
   fi
 fi
 
-# Generate the Phoenix project
-echo_heading "Generating Phoenix project..."
+# Generate Phoenix project inside Docker
+echo_heading "Generating Phoenix project using Docker..."
+ELIXIR_VERSION="1.18.2"
+OTP_VERSION="27.2.1"
+ALPINE_VERSION="3.20.5"
+
+# Docker run options:
+# - `--rm` → Remove the container after execution to keep things clean.
+# - `--mount type=bind,source="$(pwd)",target=/app` → Mounts the current directory to `/app`.
+# - `-w /app` → Sets `/app` as the working directory.
+# - `-u "$(id -u):$(id -g)"` → Runs as the host user to avoid root-owned files.
+# - `-e MIX_HOME=/tmp/.mix -e HEX_HOME=/tmp/.hex` → Use temporary directories for Mix/Hex to prevent permission issues.
 set -x
 docker run \
   --rm \
-  --mount type=bind,source="$CALLER_DIR",target=/app \
-  -u $(id -u):$(id -g) \
-  "$DOCKER_IMAGE" \
-  mix phx.new "$APP_NAME"
+  --mount type=bind,source="$(pwd)",target=/app \
+  -w /app \
+  -u "$(id -u):$(id -g)" \
+  -e MIX_HOME=/tmp/.mix \
+  -e HEX_HOME=/tmp/.hex \
+  "hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-alpine-${ALPINE_VERSION}" \
+  sh -c "
+    mix local.hex --force &&
+    mix archive.install hex phx_new --force &&
+    mix phx.new $APP_NAME
+  "
 set +x
 echo_success "Phoenix project created successfully."
 
@@ -134,19 +136,18 @@ echo_success "Phoenix project created successfully."
   sed_i 's/ip: {127, 0, 0, 1}/ip: {0, 0, 0, 0}/' ./config/dev.exs
   set +x
 
-echo_heading "Creating environment file..."
-cat <<EOF > .env
+  echo_heading "Creating environment file..."
+  cat <<EOF >.env
 # User and Group IDs for file ownership inside the container
-CONTAINER_UID=$(id -u)
-CONTAINER_GID=$(id -g)
+HOST_UID=$(id -u)
+HOST_GID=$(id -g)
 
 # Phoenix application configuration
 export APP_NODE_NAME=$APP_NODE_NAME
 export APP_COOKIE=securesecret
 EOF
-cat .env
-
-echo_success ".env file created successfully."
+  cat .env
+  echo_success ".env file created successfully."
 
   echo_heading "Running initial setup..."
   bin/setup
